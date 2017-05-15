@@ -9,21 +9,6 @@ import (
 	"strings"
 )
 
-func MatchPath(tpl, path string) bool {
-	r, _ := newRouteRegexp(tpl, true, true, false, false, false)
-	return r.regexp.MatchString(path)
-}
-
-func MatchPathVars(tpl, path string) map[string]string {
-	vars := map[string]string{}
-	r, _ := newRouteRegexp(tpl, true, true, false, false, false)
-	matches := r.regexp.FindStringSubmatchIndex(path)
-	if len(matches) > 0 {
-		extractVars(path, matches, r.varsN, vars)
-	}
-	return vars
-}
-
 // newRouteRegexp parses a route template and returns a routeRegexp,
 // used to match a host, a path or a query string.
 //

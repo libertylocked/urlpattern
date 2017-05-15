@@ -4,7 +4,7 @@ A library to match URL patterns, [gorilla/mux](https://github.com/gorilla/mux) s
 
 - Extract variables from a URL
 - Validate a URL against a pattern template
-- Match host, path, or path prefix
+- Match host, path, path prefix, or query parameters
 
 ---
 ## Install
@@ -17,8 +17,8 @@ go get -u github.com/libertylocked/urlpattern
 ### Matching paths
 ```go
 p := urlpattern.NewPattern().
-    Path("/api/event/{id:[0-9]+}")
-u, _ := url.Parse("https://super.example.com/api/event/12345")
+    Path("/api/events/{id:[0-9]+}")
+u, _ := url.Parse("https://super.example.com/api/events/12345")
 matches, matched := p.Match(u)
 // matched: true
 // matches: map[string]string{ "id": "12345" }
@@ -28,8 +28,8 @@ matches, matched := p.Match(u)
 ```go
 p := urlpattern.NewPattern().
     Host("{subdomain}.example.com").
-    Path("/api/event/{id:[0-9]+}")
-u, _ := url.Parse("https://super.example.com/api/event/12345")
+    Path("/api/events/{id:[0-9]+}")
+u, _ := url.Parse("https://super.example.com/api/events/12345")
 matches, matched := p.Match(u)
 // matched: true
 // matches: map[string]string{ "subdomain": "super", "id": "12345" }
@@ -39,20 +39,31 @@ matches, matched := p.Match(u)
 ```go
 p := urlpattern.NewPattern().
     PathPrefix("/api")
-u, _ := url.Parse("https://super.example.com/api/event/12345")
+u, _ := url.Parse("https://super.example.com/api/events/12345")
 matches, matched := p.Match(u)
 // matched: true
 // matches: map[string]string{ }
 ```
 
-### All together
+### Matching query params
 ```go
-p := NewPattern().
-    Host("{subdomain}.example.com").
-    PathPrefix("/api").
-    Path("/events/{id:[0-9]+}")
-u, _ := url.Parse("http://super.example.com/api/events/12345")
+p := urlpattern.NewPattern().
+    Queries("key", "{key:[0-9]+}")
+u, _ := url.Parse("http://super.example.com/api/events/12345?key=42")
 matches, matched := p.Match(u)
 // matched: true
-// matches: map[string]string{ "subdomain": "foo", "id": "12345" }
+// matches: map[string]string{ "key": "42" }
+```
+
+### All together
+```go
+p := urlpattern.NewPattern().
+    Host("{subdomain}.example.com").
+    PathPrefix("/api").
+    Path("/events/{id:[0-9]+}").
+    Query("key", "{key}")
+u, _ := url.Parse("http://super.example.com/api/events/12345?key=42")
+matches, matched := p.Match(u)
+// matched: true
+// matches: map[string]string{ "subdomain": "super", "id": "12345", "key": "42" }
 ```

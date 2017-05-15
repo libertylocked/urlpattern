@@ -109,3 +109,30 @@ func TestMatchHostAndPathAndPathPrefix(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestMatchQuery(t *testing.T) {
+	p := NewPattern().Queries("key", "{key:[0-9]+}")
+	u, _ := url.Parse("http://www.example.com/api/events/12345?key=42")
+	matches, matched := p.Match(u)
+	if !matched {
+		t.Fail()
+	}
+	if len(matches) != 1 {
+		t.Fail()
+	}
+	if matches["key"] != "42" {
+		t.Fail()
+	}
+}
+
+func TestMatchQueryNoMatch(t *testing.T) {
+	p := NewPattern().Queries("name", "john", "age", "{age:[0-9]+}")
+	u, _ := url.Parse("http://www.example.com/api/events/12345?name=notjohn&age=10")
+	matches, matched := p.Match(u)
+	if matched {
+		t.Fail()
+	}
+	if len(matches) != 0 {
+		t.Fail()
+	}
+}
